@@ -45,7 +45,7 @@
 
     <text
       ng-attr-x="{{node.width()/2}}"
-      y="25"
+      y="{{node.height()/2}}"
       text-anchor="middle"
       alignment-baseline="middle"
       >
@@ -58,9 +58,9 @@
       class="connector input-connector"
       >
       <text
-        ng-attr-x="{{connector.x() + 20}}"
-        ng-attr-y="{{connector.y()}}"
-        text-anchor="left"
+        ng-attr-x="{{connector.x()}}"
+        ng-attr-y="{{connector.y() + 20}}"
+        text-anchor="middle"
         alignment-baseline="middle"
         >
         {{connector.name()}}
@@ -80,9 +80,9 @@
       class="connector output-connector"
       >
       <text
-        ng-attr-x="{{connector.x() - 20}}"
-        ng-attr-y="{{connector.y()}}"
-        text-anchor="end"
+        ng-attr-x="{{connector.x()}}"
+        ng-attr-y="{{connector.y() - 20}}"
+        text-anchor="middle"
         alignment-baseline="middle"
         >
         {{connector.name()}}

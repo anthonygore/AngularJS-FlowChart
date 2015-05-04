@@ -12,7 +12,7 @@ var flowchart = {
 	//
 	// Width of a node.
 	//
-	flowchart.defaultNodeWidth = 250;
+	flowchart.defaultNodeHeight = 250;
 
 	//
 	// Amount of space reserved for displaying the node's name.
@@ -25,9 +25,9 @@ var flowchart = {
 	flowchart.connectorHeight = 35;
 
 	//
-	// Compute the Y coordinate of a connector, given its index.
+	// Compute the X coordinate of a connector, given its index.
 	//
-	flowchart.computeConnectorY = function (connectorIndex) {
+	flowchart.computeConnectorX = function (connectorIndex) {
 		return flowchart.nodeNameHeight + (connectorIndex * flowchart.connectorHeight);
 	}
 
@@ -36,8 +36,8 @@ var flowchart = {
 	//
 	flowchart.computeConnectorPos = function (node, connectorIndex, inputConnector) {
 		return {
-			x: node.x() + (inputConnector ? 0 : node.width ? node.width : flowchart.defaultNodeWidth),
-			y: node.y() + flowchart.computeConnectorY(connectorIndex),
+			x: node.x() + flowchart.computeConnectorX(connectorIndex),
+			y: node.y() + (inputConnector ? 0 : node.height ? node.height : flowchart.defaultNodeHeight),
 		};
 	};
 
@@ -83,13 +83,13 @@ var flowchart = {
 	//
 	// Create view model for a list of data models.
 	//
-	var createConnectorsViewModel = function (connectorDataModels, x, parentNode) {
+	var createConnectorsViewModel = function (connectorDataModels, y, parentNode) {
 		var viewModels = [];
 
 		if (connectorDataModels) {
 			for (var i = 0; i < connectorDataModels.length; ++i) {
 				var connectorViewModel = 
-					new flowchart.ConnectorViewModel(connectorDataModels[i], x, flowchart.computeConnectorY(i), parentNode);
+					new flowchart.ConnectorViewModel(connectorDataModels[i], flowchart.computeConnectorX(i), y, parentNode);
 				viewModels.push(connectorViewModel);
 			}
 		}
@@ -104,12 +104,12 @@ var flowchart = {
 
 		this.data = nodeDataModel;
 
-		// set the default width value of the node
-		if (!this.data.width || this.data.width < 0) {
-			this.data.width = flowchart.defaultNodeWidth;
+		// set the default height value of the node
+		if (!this.data.height || this.data.height < 0) {
+			this.data.height = flowchart.defaultNodeHeight;
 		}
 		this.inputConnectors = createConnectorsViewModel(this.data.inputConnectors, 0, this);
-		this.outputConnectors = createConnectorsViewModel(this.data.outputConnectors, this.data.width, this);
+		this.outputConnectors = createConnectorsViewModel(this.data.outputConnectors, this.data.height, this);
 
 		// Set to true when the node is selected.
 		this._selected = false;
@@ -136,21 +136,21 @@ var flowchart = {
 		};
 
 		//
-		// Width of the node.
-		//
-		this.width = function () {
-			return this.data.width;
-		}
-
-		//
 		// Height of the node.
 		//
 		this.height = function () {
+			return this.data.height;
+		}
+
+		//
+		// Width of the node.
+		//
+		this.width = function () {
 			var numConnectors =
 				Math.max(
 					this.inputConnectors.length, 
 					this.outputConnectors.length);
-			return flowchart.computeConnectorY(numConnectors);
+			return flowchart.computeConnectorX(numConnectors);
 		}
 
 		//
@@ -183,10 +183,10 @@ var flowchart = {
 
 		//
 		// Internal function to add a connector.
-		this._addConnector = function (connectorDataModel, x, connectorsDataModel, connectorsViewModel) {
+		this._addConnector = function (connectorDataModel, y, connectorsDataModel, connectorsViewModel) {
 			var connectorViewModel = 
-				new flowchart.ConnectorViewModel(connectorDataModel, x, 
-						flowchart.computeConnectorY(connectorsViewModel.length), this);
+				new flowchart.ConnectorViewModel(connectorDataModel,
+					flowchart.computeConnectorX(connectorsViewModel.length), y, this);
 
 			connectorsDataModel.push(connectorDataModel);
 
@@ -213,7 +213,7 @@ var flowchart = {
 			if (!this.data.outputConnectors) {
 				this.data.outputConnectors = [];
 			}
-			this._addConnector(connectorDataModel, this.data.width, this.data.outputConnectors, this.outputConnectors);
+			this._addConnector(connectorDataModel, this.data.height, this.data.outputConnectors, this.outputConnectors);
 		};
 	};
 
@@ -324,7 +324,7 @@ var flowchart = {
 	//
 	var computeConnectionTangentOffset = function (pt1, pt2) {
 
-		return (pt2.x - pt1.x) / 2;	
+		return (pt2.y - pt1.y) / 2;
 	}
 
 	//
@@ -332,7 +332,7 @@ var flowchart = {
 	//
 	flowchart.computeConnectionSourceTangentX = function (pt1, pt2) {
 
-		return pt1.x + computeConnectionTangentOffset(pt1, pt2);
+		return pt1.x;
 	};
 
 	//
@@ -340,7 +340,7 @@ var flowchart = {
 	//
 	flowchart.computeConnectionSourceTangentY = function (pt1, pt2) {
 
-		return pt1.y;
+		return pt1.y + computeConnectionTangentOffset(pt1, pt2);;
 	};
 
 	//
@@ -358,7 +358,7 @@ var flowchart = {
 	//
 	flowchart.computeConnectionDestTangentX = function (pt1, pt2) {
 
-		return pt2.x - computeConnectionTangentOffset(pt1, pt2);
+		return pt2.x;
 	};
 
 	//
@@ -366,7 +366,7 @@ var flowchart = {
 	//
 	flowchart.computeConnectionDestTangentY = function (pt1, pt2) {
 
-		return pt2.y;
+		return pt2.y - computeConnectionTangentOffset(pt1, pt2);
 	};
 
 	//
